@@ -4,9 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 export async function POST(req: NextRequest) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const { sessionId, ownerName: clientOwnerName } = await req.json();
   if (!sessionId || typeof sessionId !== 'string') {
     return NextResponse.json({ error: 'Missing session_id' }, { status: 400 });

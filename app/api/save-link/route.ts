@@ -4,8 +4,6 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 export async function POST(req: NextRequest) {
   const { x, y, url, sessionId } = await req.json();
 
@@ -25,6 +23,7 @@ export async function POST(req: NextRequest) {
 
   // Eigentümerschaft prüfen: Stripe-Session (Gast) oder Login
   if (sessionId && typeof sessionId === 'string') {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
     let stripeSession;
     try {
       stripeSession = await stripe.checkout.sessions.retrieve(sessionId);

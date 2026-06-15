@@ -6,7 +6,6 @@ import Stripe from 'stripe';
 import { rateLimit } from '../../lib/ratelimit';
 
 const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 function detectImageType(bytes: Uint8Array): string | null {
   if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return 'jpg';
@@ -53,6 +52,7 @@ export async function POST(req: NextRequest) {
 
   // Eigentümerschaft prüfen: entweder via Stripe-Session (Gast-Kauf) oder Login
   if (sessionId) {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
     let stripeSession;
     try {
       stripeSession = await stripe.checkout.sessions.retrieve(sessionId);

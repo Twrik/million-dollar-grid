@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { rateLimit } from '../../lib/ratelimit';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 const GRID_SIZE = 1000;
 const MAX_BLOCK = 50;
 
@@ -31,6 +29,7 @@ export async function POST(req: NextRequest) {
 
   const count = width * height;
 
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     line_items: [
