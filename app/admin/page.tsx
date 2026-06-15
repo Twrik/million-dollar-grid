@@ -15,7 +15,7 @@ interface Report {
 type Tab = 'reports' | 'comments';
 
 function parseCommentReport(r: Report): { commentId: string; userName: string; text: string } | null {
-  const match = r.reason.match(/^\[Comment:([^\]]+)\] by (.+?): "(.*)"$/s);
+  const match = r.reason.match(/^\[Comment:([^\]]+)\] by (.+?): "([\s\S]*)"$/);
   if (!match) return null;
   return { commentId: match[1], userName: match[2], text: match[3] };
 }
