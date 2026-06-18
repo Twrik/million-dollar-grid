@@ -142,27 +142,29 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
       }
     }
 
-    // Draw images only when zoomed in enough (at least 4px per cell)
-    if (cellPx >= 4) {
-      cellImagesRef.current.forEach((data, key) => {
-        const [cx, cy] = key.split(',').map(Number);
-        const img = loadedImages.current.get(key);
-        const pw = data.width * CELL_SIZE - 1;
-        const ph = data.height * CELL_SIZE - 1;
-        if (img && img.complete) {
-          ctx.drawImage(img, cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, pw, ph);
-        } else {
+    // Draw images — canvas downscales automatically when zoomed out, so this acts as a low-res preview
+    cellImagesRef.current.forEach((data, key) => {
+      const [cx, cy] = key.split(',').map(Number);
+      const img = loadedImages.current.get(key);
+      const pw = data.width * CELL_SIZE - 1;
+      const ph = data.height * CELL_SIZE - 1;
+      if (img && img.complete) {
+        if (cellPx < 2) {
+          // sub-pixel: draw as a 2x2 dot in screen space instead of a degenerate drawImage call
+          ctx.save();
+          ctx.resetTransform();
+          const sx = Math.round(cx * CELL_SIZE * scale + ox);
+          const sy = Math.round(cy * CELL_SIZE * scale + oy);
           ctx.fillStyle = '#f59e0b';
-          ctx.fillRect(cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, pw, ph);
+          ctx.fillRect(sx, sy, Math.max(2, Math.round(data.width * cellPx)), Math.max(2, Math.round(data.height * cellPx)));
+          ctx.restore();
+        } else {
+          ctx.drawImage(img, cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, pw, ph);
         }
-      });
-    } else {
-      // Just show gold for image cells at low zoom
-      cellImagesRef.current.forEach((data, key) => {
-        const [cx, cy] = key.split(',').map(Number);
+      } else {
         ctx.fillStyle = '#f59e0b';
         if (cellPx >= 2) {
-          ctx.fillRect(cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, data.width * CELL_SIZE - 1, data.height * CELL_SIZE - 1);
+          ctx.fillRect(cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, pw, ph);
         } else {
           ctx.save();
           ctx.resetTransform();
@@ -171,8 +173,8 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
           ctx.fillRect(sx, sy, Math.max(2, Math.round(data.width * cellPx)), Math.max(2, Math.round(data.height * cellPx)));
           ctx.restore();
         }
-      });
-    }
+      }
+    });
 
     // Draw highlighted block
     if (highlightedBlockRef.current) {
