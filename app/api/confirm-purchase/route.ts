@@ -6,7 +6,7 @@ import { cookies } from 'next/headers';
 
 export async function POST(req: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-  const { sessionId, ownerName: clientOwnerName } = await req.json();
+  const { sessionId, ownerName: clientOwnerName, ownerEmail: clientOwnerEmail } = await req.json();
   if (!sessionId || typeof sessionId !== 'string') {
     return NextResponse.json({ error: 'Missing session_id' }, { status: 400 });
   }
@@ -41,7 +41,8 @@ export async function POST(req: NextRequest) {
   );
   const { data: { user } } = await userClient.auth.getUser();
 
-  const ownerEmail = user?.email ?? '';
+  const ownerEmail = user?.email
+    ?? (typeof clientOwnerEmail === 'string' && clientOwnerEmail.trim().length <= 254 ? clientOwnerEmail.trim() : '');
   const serverName = user?.user_metadata?.name ?? user?.email ?? null;
   const ownerName = serverName ?? (typeof clientOwnerName === 'string' && clientOwnerName.trim() ? clientOwnerName.trim().slice(0, 50) : 'Anonym');
 

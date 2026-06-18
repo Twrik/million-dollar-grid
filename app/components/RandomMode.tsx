@@ -94,10 +94,13 @@ export default function RandomMode({ onClose, user, onLoginRequest, startAt, cle
 
   useEffect(() => {
     if (!user) { setLiked(new Set()); return; }
-    try {
-      const stored = localStorage.getItem(`mdg_liked_${user.id}`);
-      setLiked(stored ? new Set(JSON.parse(stored)) : new Set());
-    } catch { setLiked(new Set()); }
+    supabase
+      .from('cell_likes')
+      .select('cell_x, cell_y')
+      .eq('user_id', user.id)
+      .then(({ data }) => {
+        setLiked(new Set((data ?? []).map((r) => `${r.cell_x},${r.cell_y}`)));
+      });
   }, [user?.id]);
   const [loading, setLoading] = useState(true);
   const [showComments, setShowComments] = useState(false);
@@ -284,7 +287,6 @@ export default function RandomMode({ onClose, user, onLoginRequest, startAt, cle
     setLiked((prev) => {
       const next = new Set(prev);
       isAlreadyLiked ? next.delete(key) : next.add(key);
-      try { localStorage.setItem(`mdg_liked_${user.id}`, JSON.stringify([...next])); } catch {}
       return next;
     });
     setCells((prev) =>
@@ -295,7 +297,7 @@ export default function RandomMode({ onClose, user, onLoginRequest, startAt, cle
     await fetch('/api/like', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ x: current.x, y: current.y, action: isAlreadyLiked ? 'unlike' : 'like' }),
+      body: JSON.stringify({ x: current.x, y: current.y, action: isAlreadyLiked ? 'unlike' : 'like', userId: user.id }),
     });
   }
 

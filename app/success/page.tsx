@@ -24,10 +24,11 @@ function SuccessContent() {
     supabase.auth.getUser().then(({ data }) => {
       const user = data.user;
       const ownerName = user?.user_metadata?.name ?? user?.email ?? null;
+      const ownerEmail = user?.email ?? null;
       return fetch('/api/confirm-purchase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, ownerName }),
+        body: JSON.stringify({ sessionId, ownerName, ownerEmail }),
       });
     })
       .then((res) => res.json())

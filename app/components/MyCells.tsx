@@ -48,33 +48,30 @@ export default function MyCells({ user, onClose, onNavigate }: MyCellsProps) {
   }, [user.email]);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(`mdg_liked_${user.id}`);
-      const keys: string[] = stored ? JSON.parse(stored) : [];
-      if (keys.length === 0) { setLoadingLikes(false); return; }
-      const pairs = keys.map((k) => {
-        const [x, y] = k.split(',').map(Number);
-        return { x, y };
+    supabase
+      .from('cell_likes')
+      .select('cell_x, cell_y')
+      .eq('user_id', user.id)
+      .then(({ data: likeRows }) => {
+        const pairs = (likeRows ?? []).map((r) => ({ x: r.cell_x, y: r.cell_y }));
+        if (pairs.length === 0) { setLoadingLikes(false); return; }
+        Promise.all(
+          pairs.map(({ x, y }) =>
+            supabase
+              .from('cells')
+              .select('x, y, image_url, owner_name, likes')
+              .eq('x', x)
+              .eq('y', y)
+              .maybeSingle()
+          )
+        ).then((results) => {
+          const found: LikedCell[] = results
+            .map((r) => r.data)
+            .filter((d): d is LikedCell => !!d && !!d.image_url);
+          setLikedCells(found);
+          setLoadingLikes(false);
+        });
       });
-      Promise.all(
-        pairs.map(({ x, y }) =>
-          supabase
-            .from('cells')
-            .select('x, y, image_url, owner_name, likes')
-            .eq('x', x)
-            .eq('y', y)
-            .maybeSingle()
-        )
-      ).then((results) => {
-        const found: LikedCell[] = results
-          .map((r) => r.data)
-          .filter((d): d is LikedCell => !!d && !!d.image_url);
-        setLikedCells(found);
-        setLoadingLikes(false);
-      });
-    } catch {
-      setLoadingLikes(false);
-    }
   }, [user.id]);
 
   return (
