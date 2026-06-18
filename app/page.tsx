@@ -146,28 +146,6 @@ export default function Home() {
         hoverBlockSize={buyMode ? currentSize : undefined}
       />
 
-      {/* ── MOBILE ZOOM CONTROLS ── */}
-      {!cleanMode && (
-        <div className="sm:hidden absolute bottom-24 right-4 flex flex-col gap-2 z-10">
-          <button
-            className="btn-glass rounded-full flex items-center justify-center"
-            style={{ width: '40px', height: '40px', fontSize: '18px' }}
-            onClick={() => gridRef.current?.zoomBy(1.5)}
-            aria-label="Zoom in"
-          >
-            +
-          </button>
-          <button
-            className="btn-glass rounded-full flex items-center justify-center"
-            style={{ width: '40px', height: '40px', fontSize: '18px' }}
-            onClick={() => gridRef.current?.zoomBy(1 / 1.5)}
-            aria-label="Zoom out"
-          >
-            −
-          </button>
-        </div>
-      )}
-
       {/* ── TOP LEFT — counter + leaderboard ── */}
       {!cleanMode && (
         <div className="absolute top-4 left-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 anim-tl">
