@@ -51,7 +51,7 @@ export default function RecentPurchases({ onNavigate }: RecentPurchasesProps) {
   if (cells.length === 0) return null;
 
   return (
-    <div className="absolute top-28 sm:top-20 left-4 flex flex-col gap-1 pointer-events-none">
+    <div className="absolute top-24 sm:top-20 left-4 flex flex-col gap-1 pointer-events-none">
       {cells.map((c, i) => (
         <button
           key={`${c.x},${c.y}-${c.created_at}`}

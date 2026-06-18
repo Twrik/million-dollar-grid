@@ -170,7 +170,7 @@ export default function Home() {
 
       {/* ── TOP LEFT — counter + leaderboard ── */}
       {!cleanMode && (
-        <div className="absolute top-4 left-4 flex items-center gap-2 anim-tl">
+        <div className="absolute top-4 left-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 anim-tl">
           <div className="pointer-events-none">
             <div className="flex items-center gap-1.5 mb-0.5">
               <div className="live-badge live-dot" />
@@ -196,7 +196,7 @@ export default function Home() {
 
       {/* ── CENTER TOP — title + tagline ── */}
       {!cleanMode && (
-        <div className="absolute top-20 sm:top-5 left-1/2 -translate-x-1/2 text-center pointer-events-none">
+        <div className="absolute top-5 left-1/2 -translate-x-1/2 text-center pointer-events-none">
           <h1
             className="anim-title leading-none tracking-widest text-white"
             style={{ ...fontBebas, letterSpacing: '0.18em' }}
