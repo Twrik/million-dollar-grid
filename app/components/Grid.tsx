@@ -86,19 +86,37 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
     ctx.translate(ox, oy);
     ctx.scale(scale, scale);
 
-    ctx.fillStyle = '#141414';
+    ctx.fillStyle = '#1a1a1a';
     ctx.fillRect(0, 0, GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE);
 
-    // Draw purchased cells as gold background (no image)
-    ctx.fillStyle = '#f59e0b';
+    // Visible border around the entire grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 3 / scale;
+    ctx.strokeRect(0, 0, GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE);
+
+    // Pixel size of one cell in screen space
+    const cellPx = scale * CELL_SIZE;
+
+    // Draw purchased cells — always visible, minimum 1px
     purchasedCellsRef.current.forEach((key) => {
       const [cx, cy] = key.split(',').map(Number);
       if (!cellImagesRef.current.has(key)) {
-        ctx.fillRect(cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, CELL_SIZE - 1, CELL_SIZE - 1);
+        ctx.fillStyle = '#f59e0b';
+        if (cellPx >= 2) {
+          ctx.fillRect(cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, CELL_SIZE - 1, CELL_SIZE - 1);
+        } else {
+          // sub-pixel: draw 1px dot in screen space
+          ctx.save();
+          ctx.resetTransform();
+          const sx = Math.round(cx * CELL_SIZE * scale + ox);
+          const sy = Math.round(cy * CELL_SIZE * scale + oy);
+          ctx.fillRect(sx, sy, 2, 2);
+          ctx.restore();
+        }
       }
     });
 
-    // Draw grid lines when zoomed in enough — BEFORE images so lines stay below
+    // Draw grid lines when zoomed in enough
     if (scale > 0.3) {
       ctx.strokeStyle = '#2a2a2a';
       ctx.lineWidth = 1 / scale;
@@ -123,19 +141,37 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
       }
     }
 
-    // Draw block images on top of grid lines
-    cellImagesRef.current.forEach((data, key) => {
-      const [cx, cy] = key.split(',').map(Number);
-      const img = loadedImages.current.get(key);
-      const pw = data.width * CELL_SIZE - 1;
-      const ph = data.height * CELL_SIZE - 1;
-      if (img && img.complete) {
-        ctx.drawImage(img, cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, pw, ph);
-      } else {
+    // Draw images only when zoomed in enough (at least 4px per cell)
+    if (cellPx >= 4) {
+      cellImagesRef.current.forEach((data, key) => {
+        const [cx, cy] = key.split(',').map(Number);
+        const img = loadedImages.current.get(key);
+        const pw = data.width * CELL_SIZE - 1;
+        const ph = data.height * CELL_SIZE - 1;
+        if (img && img.complete) {
+          ctx.drawImage(img, cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, pw, ph);
+        } else {
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, pw, ph);
+        }
+      });
+    } else {
+      // Just show gold for image cells at low zoom
+      cellImagesRef.current.forEach((data, key) => {
+        const [cx, cy] = key.split(',').map(Number);
         ctx.fillStyle = '#f59e0b';
-        ctx.fillRect(cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, pw, ph);
-      }
-    });
+        if (cellPx >= 2) {
+          ctx.fillRect(cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, data.width * CELL_SIZE - 1, data.height * CELL_SIZE - 1);
+        } else {
+          ctx.save();
+          ctx.resetTransform();
+          const sx = Math.round(cx * CELL_SIZE * scale + ox);
+          const sy = Math.round(cy * CELL_SIZE * scale + oy);
+          ctx.fillRect(sx, sy, Math.max(2, Math.round(data.width * cellPx)), Math.max(2, Math.round(data.height * cellPx)));
+          ctx.restore();
+        }
+      });
+    }
 
     // Draw highlighted block
     if (highlightedBlockRef.current) {
