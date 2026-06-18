@@ -240,6 +240,96 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
     draw();
   };
 
+  // Touch support
+  const lastTouchDist = useRef<number | null>(null);
+  const lastTouchMid = useRef<{ x: number; y: number } | null>(null);
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+  const isTouchDragging = useRef(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      if (e.touches.length === 1) {
+        touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        lastPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        isTouchDragging.current = false;
+        lastTouchDist.current = null;
+      } else if (e.touches.length === 2) {
+        const dx = e.touches[1].clientX - e.touches[0].clientX;
+        const dy = e.touches[1].clientY - e.touches[0].clientY;
+        lastTouchDist.current = Math.sqrt(dx * dx + dy * dy);
+        lastTouchMid.current = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+        };
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      if (e.touches.length === 1) {
+        const dx = e.touches[0].clientX - lastPos.current.x;
+        const dy = e.touches[0].clientY - lastPos.current.y;
+        if (!isTouchDragging.current && touchStartPos.current) {
+          const totalDx = e.touches[0].clientX - touchStartPos.current.x;
+          const totalDy = e.touches[0].clientY - touchStartPos.current.y;
+          if (Math.abs(totalDx) > 4 || Math.abs(totalDy) > 4) isTouchDragging.current = true;
+        }
+        if (isTouchDragging.current) {
+          offsetRef.current = { x: offsetRef.current.x + dx, y: offsetRef.current.y + dy };
+        }
+        lastPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        draw();
+      } else if (e.touches.length === 2 && lastTouchDist.current !== null) {
+        const dx = e.touches[1].clientX - e.touches[0].clientX;
+        const dy = e.touches[1].clientY - e.touches[0].clientY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const mid = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+        };
+        const zoomFactor = dist / lastTouchDist.current;
+        const oldScale = scaleRef.current;
+        const newScale = Math.min(Math.max(oldScale * zoomFactor, 0.05), 50);
+        const rect = canvas.getBoundingClientRect();
+        const pivotX = mid.x - rect.left;
+        const pivotY = mid.y - rect.top;
+        offsetRef.current = {
+          x: pivotX - (pivotX - offsetRef.current.x) * (newScale / oldScale),
+          y: pivotY - (pivotY - offsetRef.current.y) * (newScale / oldScale),
+        };
+        scaleRef.current = newScale;
+        lastTouchDist.current = dist;
+        lastTouchMid.current = mid;
+        draw();
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      e.preventDefault();
+      if (e.changedTouches.length === 1 && !isTouchDragging.current && touchStartPos.current) {
+        const t = e.changedTouches[0];
+        const cell = getCellFromMouse(t.clientX, t.clientY);
+        if (cell) onCellClick(cell);
+      }
+      lastTouchDist.current = null;
+      isTouchDragging.current = false;
+      touchStartPos.current = null;
+    };
+
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    canvas.addEventListener('touchend', onTouchEnd, { passive: false });
+    return () => {
+      canvas.removeEventListener('touchstart', onTouchStart);
+      canvas.removeEventListener('touchmove', onTouchMove);
+      canvas.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [draw, getCellFromMouse, onCellClick]);
+
   useImperativeHandle(ref, () => ({
     navigateTo(x: number, y: number, w = 1, h = 1, zoom = 3) {
       const targetScale = zoom;
