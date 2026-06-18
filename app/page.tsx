@@ -38,11 +38,15 @@ export default function Home() {
   const [searchX, setSearchX] = useState('');
   const [searchY, setSearchY] = useState('');
   const gridRef = useRef<GridHandle>(null);
+  const [pendingBlockAnchor, setPendingBlockAnchor] = useState<{ x: number; y: number } | null>(null);
+  const isTouchDevice = useRef(false);
 
   useEffect(() => {
     document.body.classList.add('no-scroll');
+    isTouchDevice.current = window.matchMedia('(pointer: coarse)').matches;
     return () => document.body.classList.remove('no-scroll');
   }, []);
+
 
   function handleSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -137,6 +141,24 @@ export default function Home() {
             setAuthModal(true);
             return;
           }
+
+          // On touch devices there's no hover preview, so multi-cell blocks need a
+          // tap-to-preview, tap-again-to-confirm flow instead of a single tap.
+          if (isTouchDevice.current && buyMode && isFree && (currentSize.w > 1 || currentSize.h > 1)) {
+            const bx = Math.max(0, cell.x - currentSize.w + 1);
+            const by = Math.max(0, cell.y - currentSize.h + 1);
+            if (pendingBlockAnchor && pendingBlockAnchor.x === bx && pendingBlockAnchor.y === by) {
+              setPendingBlockAnchor(null);
+              setHighlightedBlock(null);
+              setSelectedCell(cell);
+            } else {
+              setPendingBlockAnchor({ x: bx, y: by });
+              setHighlightedBlock({ x: bx, y: by, width: currentSize.w, height: currentSize.h });
+            }
+            return;
+          }
+
+          setPendingBlockAnchor(null);
           setHighlightedBlock(null);
           setSelectedCell(cell);
         }}
@@ -354,7 +376,7 @@ export default function Home() {
                     <input
                       type="number" min={1} max={100} placeholder="n×n"
                       value={customN} onChange={(e) => setCustomN(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' && Number(customN) >= 1) { setSizeIndex(-1); setSizePopup(false); } }}
+                      onKeyDown={(e) => { if (e.key === 'Enter' && Number(customN) >= 1) { setSizeIndex(-1); setSizePopup(false); setPendingBlockAnchor(null); setHighlightedBlock(null); } }}
                       style={{ ...fontOxanium, fontSize: '12px', width: '100%', background: 'rgba(255,255,255,0.06)', color: '#fff', textAlign: 'center', padding: '8px', outline: 'none', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
                     />
                     {[{ label: '5×5' }, { label: '2×2' }, { label: '1×1' }].map((s, i) => (
@@ -362,7 +384,7 @@ export default function Home() {
                         key={s.label}
                         style={{ ...fontDm, fontSize: '12px', width: '100%', color: 'rgba(255,255,255,0.7)', padding: '7px', display: 'block', textAlign: 'center' }}
                         className="hover:bg-white/5 transition-colors"
-                        onClick={() => { setSizeIndex([2, 1, 0][i]); setSizePopup(false); setCustomN(''); }}
+                        onClick={() => { setSizeIndex([2, 1, 0][i]); setSizePopup(false); setCustomN(''); setPendingBlockAnchor(null); setHighlightedBlock(null); }}
                       >
                         {s.label}
                       </button>
@@ -381,7 +403,7 @@ export default function Home() {
               <button
                 style={{ ...fontDm, fontSize: '11px', color: 'rgba(255,255,255,0.35)', padding: '6px 10px' }}
                 className="hover:text-white transition-colors rounded-full"
-                onClick={() => { setBuyMode(false); setHighlightedBlock(null); setSelectedCell(null); }}
+                onClick={() => { setBuyMode(false); setHighlightedBlock(null); setSelectedCell(null); setPendingBlockAnchor(null); }}
               >
                 ✕
               </button>
