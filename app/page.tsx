@@ -196,12 +196,12 @@ export default function Home() {
 
       {/* ── CENTER TOP — title + tagline ── */}
       {!cleanMode && (
-        <div className="absolute top-5 left-1/2 -translate-x-1/2 text-center pointer-events-none">
+        <div className="absolute top-20 sm:top-5 left-1/2 -translate-x-1/2 text-center pointer-events-none">
           <h1
             className="anim-title leading-none tracking-widest text-white"
             style={{ ...fontBebas, letterSpacing: '0.18em' }}
           >
-            <span className="sm:hidden" style={{ fontSize: '1.2rem' }}>Million Dollar Grid</span>
+            <span className="sm:hidden" style={{ fontSize: '1rem' }}>Million Dollar Grid</span>
             <span className="hidden sm:inline" style={{ fontSize: '1.9rem' }}>Million Dollar Grid</span>
           </h1>
           <p
@@ -218,7 +218,7 @@ export default function Home() {
         <a
           href="/info"
           style={{ ...fontDm, fontSize: '10px', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.05em' }}
-          className="absolute bottom-5 left-5 hover:text-white transition-colors"
+          className="absolute bottom-20 sm:bottom-5 left-4 sm:left-5 hover:text-white transition-colors"
         >
           Info & Legal
         </a>
