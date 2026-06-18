@@ -225,7 +225,19 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
     };
     resizeCanvas();
     draw();
-    const handleResize = () => { resizeCanvas(); draw(); };
+    const handleResize = () => {
+      const canvas = canvasRef.current;
+      const oldW = canvas?.width ?? window.innerWidth;
+      const oldH = canvas?.height ?? window.innerHeight;
+      resizeCanvas();
+      // Keep the same view centered instead of drifting when viewport size changes
+      // (e.g. mobile browser address bar collapsing/expanding)
+      offsetRef.current = {
+        x: offsetRef.current.x + (window.innerWidth - oldW) / 2,
+        y: offsetRef.current.y + (window.innerHeight - oldH) / 2,
+      };
+      draw();
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [draw, resizeCanvas]);
