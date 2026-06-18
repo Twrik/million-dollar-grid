@@ -103,6 +103,7 @@ export default function Home() {
       y = Math.floor(Math.random() * 1000);
     } while (purchasedCells.has(`${x},${y}`));
     const size = SIZES[sizeIndex];
+    setPendingBlockAnchor(null);
     setHighlightedBlock({ x, y, width: size.w, height: size.h });
     gridRef.current?.navigateTo(x, y, size.w, size.h);
   }

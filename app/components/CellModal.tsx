@@ -123,7 +123,7 @@ export default function CellModal({ cell, onClose, purchasedCells, onBlockPrevie
       onClick={() => { onClose(); onBlockPreview(null); }}
     >
       <div
-        className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 w-80 text-white shadow-2xl"
+        className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 w-80 max-w-[calc(100vw-2rem)] mx-4 text-white shadow-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Owner with deleted image — show re-upload UI */}
