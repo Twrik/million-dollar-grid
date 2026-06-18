@@ -35,16 +35,20 @@ export default function MyCells({ user, onClose, onNavigate }: MyCellsProps) {
   const [likedCells, setLikedCells] = useState<LikedCell[]>([]);
   const [loadingCells, setLoadingCells] = useState(true);
   const [loadingLikes, setLoadingLikes] = useState(true);
+  const [cellsError, setCellsError] = useState(false);
+  const [likesError, setLikesError] = useState(false);
 
   useEffect(() => {
     supabase
       .from('cells')
       .select('x, y, width, height, image_url, link_url')
       .eq('owner_email', user.email)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) { setCellsError(true); setLoadingCells(false); return; }
         if (data) setCells(data as OwnedCell[]);
         setLoadingCells(false);
-      });
+      })
+      .catch(() => { setCellsError(true); setLoadingCells(false); });
   }, [user.email]);
 
   useEffect(() => {
@@ -52,7 +56,8 @@ export default function MyCells({ user, onClose, onNavigate }: MyCellsProps) {
       .from('cell_likes')
       .select('cell_x, cell_y')
       .eq('user_id', user.id)
-      .then(({ data: likeRows }) => {
+      .then(({ data: likeRows, error }) => {
+        if (error) { setLikesError(true); setLoadingLikes(false); return; }
         const pairs = (likeRows ?? []).map((r) => ({ x: r.cell_x, y: r.cell_y }));
         if (pairs.length === 0) { setLoadingLikes(false); return; }
         Promise.all(
@@ -70,8 +75,9 @@ export default function MyCells({ user, onClose, onNavigate }: MyCellsProps) {
             .filter((d): d is LikedCell => !!d && !!d.image_url);
           setLikedCells(found);
           setLoadingLikes(false);
-        });
-      });
+        }).catch(() => { setLikesError(true); setLoadingLikes(false); });
+      })
+      .catch(() => { setLikesError(true); setLoadingLikes(false); });
   }, [user.id]);
 
   return (
@@ -120,7 +126,10 @@ export default function MyCells({ user, onClose, onNavigate }: MyCellsProps) {
           {tab === 'cells' && (
             <>
               {loadingCells && <p className="text-zinc-500 text-sm text-center mt-8">Loading…</p>}
-              {!loadingCells && cells.length === 0 && (
+              {!loadingCells && cellsError && (
+                <p className="text-red-400 text-sm text-center mt-8">Could not load your cells. Check your connection.</p>
+              )}
+              {!loadingCells && !cellsError && cells.length === 0 && (
                 <div className="text-center mt-8">
                   <p className="text-zinc-400 text-sm">You don't own any cells yet.</p>
                   <p className="text-zinc-600 text-xs mt-1">Buy your first cell!</p>
@@ -161,7 +170,10 @@ export default function MyCells({ user, onClose, onNavigate }: MyCellsProps) {
           {tab === 'likes' && (
             <>
               {loadingLikes && <p className="text-zinc-500 text-sm text-center mt-8">Loading…</p>}
-              {!loadingLikes && likedCells.length === 0 && (
+              {!loadingLikes && likesError && (
+                <p className="text-red-400 text-sm text-center mt-8">Could not load your likes. Check your connection.</p>
+              )}
+              {!loadingLikes && !likesError && likedCells.length === 0 && (
                 <div className="text-center mt-8">
                   <p className="text-zinc-400 text-sm">No liked images yet.</p>
                   <p className="text-zinc-600 text-xs mt-1">Like images to find them here!</p>

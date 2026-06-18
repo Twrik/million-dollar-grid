@@ -466,7 +466,7 @@ export default function RandomMode({ onClose, user, onLoginRequest, startAt, cle
       <div
         className="absolute bottom-0 left-1/2 z-20 flex flex-col"
         style={{
-          width: 'min(672px, calc(100vw - 120px))',
+          width: 'min(672px, calc(100vw - 32px))',
           transform: showComments ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(100%)',
           height: '40%',
           background: 'rgba(9,9,16,0.97)',

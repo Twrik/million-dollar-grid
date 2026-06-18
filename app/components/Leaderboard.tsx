@@ -19,6 +19,7 @@ interface LeaderboardProps {
 export default function Leaderboard({ onClose, onNavigate }: LeaderboardProps) {
   const [cells, setCells] = useState<TopCell[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     supabase
@@ -27,10 +28,12 @@ export default function Leaderboard({ onClose, onNavigate }: LeaderboardProps) {
       .not('image_url', 'is', null)
       .order('likes', { ascending: false })
       .limit(10)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) { setError(true); setLoading(false); return; }
         if (data) setCells(data as TopCell[]);
         setLoading(false);
-      });
+      })
+      .catch(() => { setError(true); setLoading(false); });
   }, []);
 
   return (
@@ -52,7 +55,10 @@ export default function Leaderboard({ onClose, onNavigate }: LeaderboardProps) {
 
         <div className="flex-1 overflow-y-auto p-4">
           {loading && <p className="text-zinc-500 text-sm text-center mt-8">Loading…</p>}
-          {!loading && cells.length === 0 && (
+          {!loading && error && (
+            <p className="text-red-400 text-sm text-center mt-8">Could not load leaderboard. Check your connection.</p>
+          )}
+          {!loading && !error && cells.length === 0 && (
             <p className="text-zinc-500 text-sm text-center mt-8">No images yet.</p>
           )}
           <div className="flex flex-col gap-3">
