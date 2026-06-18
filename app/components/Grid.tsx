@@ -295,6 +295,7 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
   const lastTouchMid = useRef<{ x: number; y: number } | null>(null);
   const touchStartPos = useRef<{ x: number; y: number } | null>(null);
   const isTouchDragging = useRef(false);
+  const wasPinching = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -315,6 +316,7 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
           x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
           y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
         };
+        wasPinching.current = true;
       }
     };
 
@@ -360,14 +362,17 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
 
     const onTouchEnd = (e: TouchEvent) => {
       e.preventDefault();
-      if (e.changedTouches.length === 1 && !isTouchDragging.current && touchStartPos.current) {
+      if (e.touches.length === 0 && e.changedTouches.length === 1 && !isTouchDragging.current && !wasPinching.current && touchStartPos.current) {
         const t = e.changedTouches[0];
         const cell = getCellFromMouse(t.clientX, t.clientY);
         if (cell) onCellClick(cell);
       }
-      lastTouchDist.current = null;
-      isTouchDragging.current = false;
-      touchStartPos.current = null;
+      if (e.touches.length === 0) {
+        lastTouchDist.current = null;
+        isTouchDragging.current = false;
+        touchStartPos.current = null;
+        wasPinching.current = false;
+      }
     };
 
     canvas.addEventListener('touchstart', onTouchStart, { passive: false });
