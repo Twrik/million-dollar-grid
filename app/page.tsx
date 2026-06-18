@@ -39,6 +39,11 @@ export default function Home() {
   const [searchY, setSearchY] = useState('');
   const gridRef = useRef<GridHandle>(null);
 
+  useEffect(() => {
+    document.body.classList.add('no-scroll');
+    return () => document.body.classList.remove('no-scroll');
+  }, []);
+
   function handleSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const x = Math.min(1000, Math.max(1, Number(searchX) || 1)) - 1;
