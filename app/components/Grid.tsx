@@ -398,7 +398,7 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
-      style={{ display: 'block', cursor: 'grab' }}
+      style={{ display: 'block', cursor: 'grab', touchAction: 'none' }}
     />
   );
 });

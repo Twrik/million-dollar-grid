@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bebas_Neue, DM_Sans, Oxanium } from "next/font/google";
 import "./globals.css";
 
@@ -26,6 +26,13 @@ const oxanium = Oxanium({
 export const metadata: Metadata = {
   title: "Million Dollar Grid",
   description: "Own a piece of the internet. Forever.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
