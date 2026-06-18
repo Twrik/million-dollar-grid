@@ -150,13 +150,14 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
       const ph = data.height * CELL_SIZE - 1;
       if (img && img.complete) {
         if (cellPx < 2) {
-          // sub-pixel: draw as a 2x2 dot in screen space instead of a degenerate drawImage call
+          // sub-pixel: draw the image into a screen-space 2x2 box so it blends to its real average color
           ctx.save();
           ctx.resetTransform();
           const sx = Math.round(cx * CELL_SIZE * scale + ox);
           const sy = Math.round(cy * CELL_SIZE * scale + oy);
-          ctx.fillStyle = '#f59e0b';
-          ctx.fillRect(sx, sy, Math.max(2, Math.round(data.width * cellPx)), Math.max(2, Math.round(data.height * cellPx)));
+          const sw = Math.max(2, Math.round(data.width * cellPx));
+          const sh = Math.max(2, Math.round(data.height * cellPx));
+          ctx.drawImage(img, sx, sy, sw, sh);
           ctx.restore();
         } else {
           ctx.drawImage(img, cx * CELL_SIZE + 1, cy * CELL_SIZE + 1, pw, ph);
