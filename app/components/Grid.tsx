@@ -55,6 +55,15 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
     return { x: cellX, y: cellY };
   }, []);
 
+  const resizeCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+  }, []);
+
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -63,9 +72,6 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
 
     const { x: ox, y: oy } = offsetRef.current;
     const scale = scaleRef.current;
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
 
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -171,11 +177,12 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
       x: (window.innerWidth - GRID_SIZE * CELL_SIZE * scale) / 2,
       y: (window.innerHeight - GRID_SIZE * CELL_SIZE * scale) / 2,
     };
+    resizeCanvas();
     draw();
-    const handleResize = () => draw();
+    const handleResize = () => { resizeCanvas(); draw(); };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [draw]);
+  }, [draw, resizeCanvas]);
 
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
