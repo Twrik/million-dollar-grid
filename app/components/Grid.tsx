@@ -70,6 +70,12 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Only reset canvas size when window size actually changes — avoids clearing context during pinch zoom
+    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
     const { x: ox, y: oy } = offsetRef.current;
     const scale = scaleRef.current;
 
