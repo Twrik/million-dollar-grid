@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 
 
 export interface GridHandle {
   navigateTo: (x: number, y: number, w?: number, h?: number, zoom?: number) => void;
+  zoomBy: (factor: number) => void;
 }
 
 const GRID_SIZE = 1000;
@@ -387,6 +388,20 @@ const Grid = forwardRef<GridHandle, GridProps>(function Grid({ onCellClick, purc
         x: window.innerWidth / 2 - (x + w / 2) * CELL_SIZE * targetScale,
         y: window.innerHeight / 2 - (y + h / 2) * CELL_SIZE * targetScale,
       };
+      draw();
+    },
+    zoomBy(factor: number) {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const pivotX = canvas.width / 2;
+      const pivotY = canvas.height / 2;
+      const oldScale = scaleRef.current;
+      const newScale = Math.min(Math.max(oldScale * factor, 0.05), 50);
+      offsetRef.current = {
+        x: pivotX - (pivotX - offsetRef.current.x) * (newScale / oldScale),
+        y: pivotY - (pivotY - offsetRef.current.y) * (newScale / oldScale),
+      };
+      scaleRef.current = newScale;
       draw();
     },
   }));
