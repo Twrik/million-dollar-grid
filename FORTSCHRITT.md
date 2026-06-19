@@ -81,8 +81,46 @@ Vollständiges Raster mit Zoom/Pan. Kauf-Dialog öffnet sich beim Klick auf ein 
 - [x] Rechtsklick öffnet keinen Dialog
 - [x] Bild-Großansicht beim Klick auf gekauftes Kästchen
 
+### Schritt 11 — Sicherheits-Review (50 Punkte durchgegangen)
+- [x] Row-Level-Security (RLS) auf allen Tabellen aktiviert (cells, comments, reports, usernames)
+- [x] Admin-Routen abgesichert (`app/api/admin/_auth.ts` prüft Cookie-Auth + ADMIN_EMAIL, Service Role Key nur serverseitig)
+- [x] Upload-Validierung: Magic-Bytes-Check (JPEG/PNG/GIF/WebP), 2MB Limit, Rate Limiting
+- [x] Dual-Auth-Pattern für Upload/Save-Link: Stripe `session_id` ODER Cookie-Auth + DB-Ownership-Check
+- [x] Rate Limiting (`app/lib/ratelimit.ts`, In-Memory Map) auf Upload/Like/Comment-Vote/Checkout
+- [x] Security Headers in `next.config.ts` (X-Frame-Options, HSTS, Permissions-Policy etc.)
+- [x] Source Maps in Produktion deaktiviert
+- [x] Fehlermeldungen generisch gemacht (keine internen DB-Fehler an Client)
+- [x] CVE-Fix: postcss override in package.json
+
+### Schritt 12 — Design & Mobile-Optimierung
+- [x] Design-Research durchgeführt, Farbpalette/Layout-Feedback eingearbeitet (Gold-Theme behalten)
+- [x] Mobile-Header-Overlap gefixt (Counter/Titel/User-Bereich responsive gestapelt)
+- [x] Touch-Support fürs Grid: Pinch-to-Zoom, Touch-Pan, Tap-to-Select
+- [x] Viewport-Meta-Tag ergänzt (fehlte komplett — Ursache für viele Mobile-Bugs)
+- [x] Canvas-Resize-Bug gefixt (Grid verschwand/verschob sich bei Adressleisten-Ein/Ausklappen)
+- [x] Bilder werden jetzt auch bei starkem Rauszoomen als Vorschau gezeigt (downscaled statt Flatfarbe)
+- [x] Tap-zum-Markieren-dann-Tap-zum-Kaufen Flow für Mehrfach-Zellen-Blöcke auf Touch-Geräten
+- [x] Cross-Device-Like-Sync (neue Tabelle `cell_likes`, vorher nur localStorage pro Gerät)
+- [x] `owner_email`-Fallback beim Kauf (Cookie-Auth schlägt auf Mobile manchmal fehl)
+- [x] Fehleranzeigen bei fehlgeschlagenen Supabase-Requests (Leaderboard, My Cells)
+
+### Schritt 13 — Deployment & Domain
+- [x] GitHub-Repo erstellt (`Twrik/million-dollar-grid`), Repo auf public gestellt (Hobby-Plan-Limit)
+- [x] Vercel-Projekt verbunden, Environment Variables eingetragen
+- [x] Eigene Domain gekauft: `milliondollargrid.company` (über Vercel, $3.99/Jahr)
+- [x] Domain mit Projekt verbunden, läuft
+
+### Schritt 14 — Rechtliches (teilweise)
+- [x] Datenschutzerklärung erstellt (`app/privacy/page.tsx`)
+- [x] Widerrufsrecht-Checkbox vor Kauf eingebaut (`CellModal.tsx`) — Nutzer muss aktiv bestätigen
+- [ ] **Impressum fehlt noch** — baut der Nutzer selbst (`/impressum`, Datenschutzerklärung verlinkt schon dorthin)
+
 ## Nächste Schritte (geplant)
-1. Deployment auf Vercel
+1. **Impressum erstellen** (Nutzer macht das selbst — braucht echten Namen + Adresse)
+2. **Stripe Live-Modus aktivieren** — Konto wird aktuell von Stripe verifiziert (1-2 Werktage), danach:
+   - Live-Keys aus Stripe Dashboard holen (`pk_live_...` / `sk_live_...`)
+   - In Vercel Environment Variables ersetzen (`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`)
+   - Redeploy auslösen
 
 ---
 
@@ -104,7 +142,12 @@ Vollständiges Raster mit Zoom/Pan. Kauf-Dialog öffnet sich beim Klick auf ein 
 
 ## Tech Stack
 - **Next.js** — Framework für die Website (Frontend + Backend)
-- **Tailwind CSS** — Styling (wird automatisch mitgeliefert)
-- **Supabase** — Datenbank & Bildupload (kommt noch)
-- **Stripe** — Zahlungsabwicklung (kommt noch)
-- **Vercel** — Hosting (kommt noch)
+- **Tailwind CSS** — Styling
+- **Supabase** — Datenbank, Storage, Auth
+- **Stripe** — Zahlungsabwicklung (aktuell Test-Modus, Live-Verifizierung läuft)
+- **Vercel** — Hosting
+
+## Live-Links
+- Seite: https://milliondollargrid.company
+- GitHub: https://github.com/Twrik/million-dollar-grid
+- Vercel-Projekt: million-dollar-grid-5ntd
