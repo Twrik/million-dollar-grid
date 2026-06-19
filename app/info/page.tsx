@@ -114,7 +114,23 @@ export default function InfoPage() {
           </a>
         </section>
 
-        <div className="border-t border-zinc-800 pt-8 text-zinc-600 text-xs">
+        {/* Withdrawal right */}
+        <section className="mb-10">
+          <h2 className="text-lg font-bold text-amber-400 mb-3">Right of Withdrawal</h2>
+          <p className="text-zinc-400 leading-relaxed">
+            By completing a purchase, you expressly request immediate delivery of this digital
+            service and acknowledge that you lose your right of withdrawal once the cell has been
+            activated, since performance begins immediately at your request.
+          </p>
+        </section>
+
+        <div className="border-t border-zinc-800 pt-8">
+          <a href="/privacy" className="text-zinc-500 hover:text-white text-sm transition-colors">
+            Privacy Policy
+          </a>
+        </div>
+
+        <div className="border-t border-zinc-800 pt-8 mt-4 text-zinc-600 text-xs">
           Million Dollar Grid — All rights reserved
         </div>
       </div>

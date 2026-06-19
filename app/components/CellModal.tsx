@@ -21,6 +21,7 @@ export default function CellModal({ cell, onClose, purchasedCells, onBlockPrevie
   const [uploaded, setUploaded] = useState<string | null>(null);
   const [link, setLink] = useState('');
   const [linkSaved, setLinkSaved] = useState(false);
+  const [withdrawalConsent, setWithdrawalConsent] = useState(false);
 
   const bx = cell ? Math.max(0, cell.x - selectedSize.w + 1) : 0;
   const by = cell ? Math.max(0, cell.y - selectedSize.h + 1) : 0;
@@ -227,13 +228,27 @@ export default function CellModal({ cell, onClose, purchasedCells, onBlockPrevie
                 Block contains already purchased cells
               </div>
             ) : (
-              <button
-                className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-zinc-600 disabled:text-zinc-400 text-black font-bold py-3 rounded-xl transition-colors mb-3"
-                onClick={handleBuy}
-                disabled={loading}
-              >
-                {loading ? 'Redirecting…' : `Buy ${price} cell${price > 1 ? 's' : ''}`}
-              </button>
+              <>
+                <label className="flex items-start gap-2 mb-3 text-xs text-zinc-400 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={withdrawalConsent}
+                    onChange={(e) => setWithdrawalConsent(e.target.checked)}
+                    className="mt-0.5 shrink-0"
+                  />
+                  <span>
+                    I request immediate delivery of this digital cell and acknowledge that I lose my
+                    right of withdrawal once it is activated.
+                  </span>
+                </label>
+                <button
+                  className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-zinc-600 disabled:text-zinc-400 text-black font-bold py-3 rounded-xl transition-colors mb-3"
+                  onClick={handleBuy}
+                  disabled={loading || !withdrawalConsent}
+                >
+                  {loading ? 'Redirecting…' : `Buy ${price} cell${price > 1 ? 's' : ''}`}
+                </button>
+              </>
             )}
 
             <button
