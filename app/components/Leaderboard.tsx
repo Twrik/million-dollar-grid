@@ -22,18 +22,22 @@ export default function Leaderboard({ onClose, onNavigate }: LeaderboardProps) {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from('cells')
-      .select('x, y, image_url, owner_name, likes')
-      .not('image_url', 'is', null)
-      .order('likes', { ascending: false })
-      .limit(10)
-      .then(({ data, error }) => {
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('cells')
+          .select('x, y, image_url, owner_name, likes')
+          .not('image_url', 'is', null)
+          .order('likes', { ascending: false })
+          .limit(10);
         if (error) { setError(true); setLoading(false); return; }
         if (data) setCells(data as TopCell[]);
         setLoading(false);
-      })
-      .catch(() => { setError(true); setLoading(false); });
+      } catch {
+        setError(true);
+        setLoading(false);
+      }
+    })();
   }, []);
 
   return (

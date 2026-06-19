@@ -39,28 +39,33 @@ export default function MyCells({ user, onClose, onNavigate }: MyCellsProps) {
   const [likesError, setLikesError] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from('cells')
-      .select('x, y, width, height, image_url, link_url')
-      .eq('owner_email', user.email)
-      .then(({ data, error }) => {
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('cells')
+          .select('x, y, width, height, image_url, link_url')
+          .eq('owner_email', user.email);
         if (error) { setCellsError(true); setLoadingCells(false); return; }
         if (data) setCells(data as OwnedCell[]);
         setLoadingCells(false);
-      })
-      .catch(() => { setCellsError(true); setLoadingCells(false); });
+      } catch {
+        setCellsError(true);
+        setLoadingCells(false);
+      }
+    })();
   }, [user.email]);
 
   useEffect(() => {
-    supabase
-      .from('cell_likes')
-      .select('cell_x, cell_y')
-      .eq('user_id', user.id)
-      .then(({ data: likeRows, error }) => {
+    (async () => {
+      try {
+        const { data: likeRows, error } = await supabase
+          .from('cell_likes')
+          .select('cell_x, cell_y')
+          .eq('user_id', user.id);
         if (error) { setLikesError(true); setLoadingLikes(false); return; }
         const pairs = (likeRows ?? []).map((r) => ({ x: r.cell_x, y: r.cell_y }));
         if (pairs.length === 0) { setLoadingLikes(false); return; }
-        Promise.all(
+        const results = await Promise.all(
           pairs.map(({ x, y }) =>
             supabase
               .from('cells')
@@ -69,15 +74,17 @@ export default function MyCells({ user, onClose, onNavigate }: MyCellsProps) {
               .eq('y', y)
               .maybeSingle()
           )
-        ).then((results) => {
-          const found: LikedCell[] = results
-            .map((r) => r.data)
-            .filter((d): d is LikedCell => !!d && !!d.image_url);
-          setLikedCells(found);
-          setLoadingLikes(false);
-        }).catch(() => { setLikesError(true); setLoadingLikes(false); });
-      })
-      .catch(() => { setLikesError(true); setLoadingLikes(false); });
+        );
+        const found: LikedCell[] = results
+          .map((r) => r.data)
+          .filter((d): d is LikedCell => !!d && !!d.image_url);
+        setLikedCells(found);
+        setLoadingLikes(false);
+      } catch {
+        setLikesError(true);
+        setLoadingLikes(false);
+      }
+    })();
   }, [user.id]);
 
   return (
